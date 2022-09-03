@@ -17,18 +17,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RedisVerticle extends AbstractVerticle {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    //每个请求的开始时间
     ConcurrentHashMap<Integer, Long> begins = new ConcurrentHashMap<>();
+
+    //每个请求的结束时间，-1代表请求出错
     ConcurrentHashMap<Integer, Long> ends = new ConcurrentHashMap<>();
 
-    ConcurrentHashMap<Integer, Queue<Integer>> periodIds = new ConcurrentHashMap<>();
-    //默认一秒发一次
-    int concurrentPeriod = 1000;
-    //每个period发的次数
-    int concurrentPerSecond = 100;
+    //默认一秒为一个period，每个period开始，利用vert发出所有请求。
+    int concurrentPeriodTime = 1000;
+    //每个period发的次数，即并发数
+    int concurrentPerPeriod = 500;
     AtomicInteger currentRequestId = new AtomicInteger(0);
 
-    //    AtomicInteger currentPeriodId = new AtomicInteger(0);
-    void logStatus() {
+    void logRequestStatus() {
         int tot = 0;
         var list = Collections.list(ends.keys());
         list.sort(Comparator.reverseOrder());
@@ -38,11 +39,11 @@ public class RedisVerticle extends AbstractVerticle {
             if (ends.get(i) != -1) {
                 tot += ends.get(i) - begins.get(i);
             }
-            if (cnt++ > 1000) {
+            if (++cnt >= 1000) {
                 break;
             }
         }
-        logger.info("recent {} request cost average {} ms", cnt, (double) tot / (double) cnt);
+        logger.info("recent {} requests cost average {} ms, {} requests complete", cnt, (double) tot / cnt, list.size());
     }
 
     void periodConcurrent() {
@@ -51,49 +52,39 @@ public class RedisVerticle extends AbstractVerticle {
                 .setUserAgent("My-App/1.2.3");
         options.setKeepAlive(false);
         long produceRequestTime = System.currentTimeMillis();
-//        Queue<Integer> queue = new ArrayDeque<>();
-        for (int i = 0; i < concurrentPerSecond; i++) {
+        for (int i = 0; i < concurrentPerPeriod; i++) {
             int finalId = currentRequestId.getAndAdd(1);
-//            queue.add(finalId);
             begins.put(finalId, System.currentTimeMillis());
             HttpRequest<Buffer> localhost = client
                     .get(8000, "localhost", "/api/ticks");
 
             localhost.send()
                     .onSuccess(response -> {
-//                        System.out
-//                                .println("Received response with status code " + response.statusCode());
-//                        System.out.println(response.body()
-//                        );
                         long endTime = System.currentTimeMillis();
-//                        logger.info("id {} pre {} end {}", finalI, begins.get(finalI), endTime);
                         ends.put(finalId, endTime);
 
                     })
                     .onFailure(err -> {
-                        System.out.println("Something went wrong " + finalId + " " + err.getMessage());
+                        logger.error("Something went wrong " + finalId + " " + err.getMessage());
                         ends.put(finalId, -1L);
                     });
         }
-//        periodIds.put(currentPeriodId.getAndAdd(1), queue);
-//        logger.info("producer request cost {} ms", System.currentTimeMillis() - produceRequestTime);
+        logger.info("produce request cost {} ms", System.currentTimeMillis() - produceRequestTime);
     }
 
     @Override
     public void start() throws Exception {
         vertx.setPeriodic(3000, id -> {
-            logStatus();
+            logRequestStatus();
         });
 
-        vertx.setPeriodic(concurrentPeriod, id -> {
+        vertx.setPeriodic(concurrentPeriodTime, id -> {
             periodConcurrent();
         });
     }
 
     public static void main(String[] args) {
         Vertx vert = Vertx.vertx();
-
-
         var push = new RedisVerticle();
         vert.deployVerticle(push);
     }
