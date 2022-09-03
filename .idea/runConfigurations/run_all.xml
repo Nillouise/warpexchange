@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="run all" type="CompoundRunConfigurationType">
+    <toRun name="ConfigApplication" type="Application" />
+    <toRun name="PushApplication" type="Application" />
+    <toRun name="QuotationApplication" type="Application" />
+    <toRun name="TradingApiApplication" type="Application" />
+    <toRun name="TradingEngineApplication" type="Application" />
+    <toRun name="TradingSequencerApplication" type="Application" />
+    <toRun name="UIApplication" type="Application" />
+    <method v="2" />
+  </configuration>
+</component>
