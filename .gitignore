@@ -67,26 +67,26 @@ nb-configuration.xml
 *.iml
 
 ## Directory-based project format:
-#.idea/
+##.idea/
 # if you remove the above rule, at least ignore the following:
 
- User-specific stuff:
+# User-specific stuff:
  .idea/workspace.xml
  .idea/tasks.xml
  .idea/dictionaries
 
- Sensitive or high-churn files:
+# Sensitive or high-churn files:
  .idea/dataSources.ids
  .idea/dataSources.xml
  .idea/sqlDataSources.xml
  .idea/dynamic.xml
  .idea/uiDesigner.xml
 
- Gradle:
+# Gradle:
  .idea/gradle.xml
  .idea/libraries
 
- Mongo Explorer plugin:
+# Mongo Explorer plugin:
  .idea/mongoSettings.xml
 
 ## File-based project format:
