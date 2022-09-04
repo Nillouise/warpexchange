@@ -1,0 +1,5 @@
+# ui configuration
+
+server:
+  port: ${APP_PORT:8022}
+

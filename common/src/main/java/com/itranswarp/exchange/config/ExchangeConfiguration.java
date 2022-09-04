@@ -75,6 +75,16 @@ public class ExchangeConfiguration {
         private String tradingApi;
         private String tradingEngineApi;
 
+        private String tradingGateway;
+
+        public String getTradingGateway() {
+            return tradingGateway;
+        }
+
+        public void setTradingGateway(String tradingGateway) {
+            this.tradingGateway = tradingGateway;
+        }
+
         public String getTradingApi() {
             return tradingApi;
         }

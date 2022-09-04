@@ -25,7 +25,7 @@
 		<pebble.version>3.1.5</pebble.version>
 		<springcloud.version>2021.0.3</springcloud.version>
 		<springdoc.version>1.6.9</springdoc.version>
-		<vertx.version>4.3.1</vertx.version>
+		<vertx.version>4.3.3</vertx.version>
 	</properties>
 
 	<dependencyManagement>
