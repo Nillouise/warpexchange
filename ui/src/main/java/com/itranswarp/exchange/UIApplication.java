@@ -20,7 +20,7 @@ public class UIApplication {
 
     @Bean
     public RestClient createRestClient(
-            @Value("#{exchangeConfiguration.apiEndpoints.tradingGateway}") String tradingApiEndpoint,
+            @Value("#{exchangeConfiguration.apiEndpoints.tradingApi}") String tradingApiEndpoint,
             @Autowired ObjectMapper objectMapper) {
         return new RestClient.Builder(tradingApiEndpoint).build(objectMapper);
     }

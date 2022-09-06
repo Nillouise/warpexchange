@@ -6,24 +6,16 @@ spring:
 
   main:
     web-application-type: reactive
-#    spring:
-  cloud:
-    gateway:
-      httpclient:
-        wiretap: true
-      httpserver:
-        wiretap: true
-      routes:
-        - id: method_route
-          uri: http://localhost:8001
-          predicates:
-            - Method=GET,POST
 
-logging:
-  level:
-    reactor:
-      netty: INFO
-    org:
-      springframework:
-        cloud:
-          gateway: TRACE
+#redis:
+#  host: localhost
+#  port: 6379
+
+#logging:
+#  level:
+#    reactor:
+#      netty: INFO
+#    org:
+#      springframework:
+#        cloud:
+#          gateway: TRACE
