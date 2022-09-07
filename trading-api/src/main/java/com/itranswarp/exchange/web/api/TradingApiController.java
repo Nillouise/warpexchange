@@ -243,6 +243,7 @@ public class TradingApiController extends AbstractApiController {
         event.price = orderRequest.price;
         event.quantity = orderRequest.quantity;
         event.createdAt = System.currentTimeMillis();
+        event.asset = orderRequest.asset;
 
         ResponseEntity<String> timeout = new ResponseEntity<>(getTimeoutJson(), HttpStatus.BAD_REQUEST);
         DeferredResult<ResponseEntity<String>> deferred = new DeferredResult<>(this.asyncTimeout, timeout);

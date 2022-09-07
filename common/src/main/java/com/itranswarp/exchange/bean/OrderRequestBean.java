@@ -5,11 +5,14 @@ import java.math.RoundingMode;
 
 import com.itranswarp.exchange.ApiError;
 import com.itranswarp.exchange.ApiException;
+import com.itranswarp.exchange.enums.AssetEnum;
 import com.itranswarp.exchange.enums.Direction;
 
 public class OrderRequestBean implements ValidatableBean {
 
     public Direction direction;
+
+    public AssetEnum asset;
 
     public BigDecimal price;
 

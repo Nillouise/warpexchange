@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.itranswarp.exchange.enums.AssetEnum;
 import org.springframework.lang.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,6 +41,12 @@ public class OrderEntity implements EntitySupport, Comparable<OrderEntity> {
      */
     @Column(nullable = false, updatable = false, length = VAR_ENUM)
     public Direction direction;
+
+    /**
+     * Order Asset.
+     */
+    @Column(nullable = false, updatable = false, length = VAR_ENUM)
+    public AssetEnum asset;
 
     /**
      * User id of this order.

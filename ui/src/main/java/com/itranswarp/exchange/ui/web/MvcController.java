@@ -137,6 +137,8 @@ public class MvcController extends LoggerSupport {
             deposit(profile.userId, AssetEnum.BTC, new BigDecimal(random.nextInt(5_00, 10_00)).movePointLeft(2));
             deposit(profile.userId, AssetEnum.USD,
                     new BigDecimal(random.nextInt(100000_00, 400000_00)).movePointLeft(2));
+            deposit(profile.userId, AssetEnum.ETH,
+                    new BigDecimal(random.nextInt(100000_00, 400000_00)).movePointLeft(2));
         }
         logger.info("user signed up: {}", profile);
         return profile;

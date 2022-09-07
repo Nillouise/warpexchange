@@ -49,8 +49,8 @@ public class ClearingService extends LoggerSupport {
                 // 买方USD转入卖方账户:
                 assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, taker.userId, maker.userId, AssetEnum.USD,
                         maker.price.multiply(matched));
-                // 卖方BTC转入买方账户:
-                assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, maker.userId, taker.userId, AssetEnum.BTC, matched);
+                // 卖方资产转入买方账户:
+                assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, maker.userId, taker.userId, taker.asset, matched);
                 // 删除完全成交的Maker:
                 if (maker.unfilledQuantity.signum() == 0) {
                     orderService.removeOrder(maker.id);
@@ -71,8 +71,8 @@ public class ClearingService extends LoggerSupport {
                 }
                 OrderEntity maker = detail.makerOrder();
                 BigDecimal matched = detail.quantity();
-                // 卖方BTC转入买方账户:
-                assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, taker.userId, maker.userId, AssetEnum.BTC, matched);
+                // 卖方资产转入买方账户:
+                assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, taker.userId, maker.userId, taker.asset, matched);
                 // 买方USD转入卖方账户:
                 assetService.transfer(Transfer.FROZEN_TO_AVAILABLE, maker.userId, taker.userId, AssetEnum.USD,
                         maker.price.multiply(matched));
@@ -97,8 +97,8 @@ public class ClearingService extends LoggerSupport {
             assetService.unfreeze(order.userId, AssetEnum.USD, order.price.multiply(order.unfilledQuantity));
         }
         case SELL -> {
-            // 解冻BTC = 未成交数量
-            assetService.unfreeze(order.userId, AssetEnum.BTC, order.unfilledQuantity);
+            // 解冻资产 = 未成交数量
+            assetService.unfreeze(order.userId, order.asset, order.unfilledQuantity);
         }
         default -> throw new IllegalArgumentException("Invalid direction.");
         }

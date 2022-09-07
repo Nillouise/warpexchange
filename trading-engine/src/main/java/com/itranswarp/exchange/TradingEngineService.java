@@ -377,7 +377,7 @@ public class TradingEngineService extends LoggerSupport {
         int year = zdt.getYear();
         int month = zdt.getMonth().getValue();
         long orderId = event.sequenceId * 10000 + (year * 100 + month);
-        OrderEntity order = this.orderService.createOrder(event.sequenceId, event.createdAt, orderId, event.userId,
+        OrderEntity order = this.orderService.createOrder(event.sequenceId, event.asset, event.createdAt, orderId, event.userId,
                 event.direction, event.price, event.quantity);
         if (order == null) {
             logger.warn("create order failed.");
@@ -498,6 +498,7 @@ public class TradingEngineService extends LoggerSupport {
         // 验证系统资产完整性:
         BigDecimal totalUSD = BigDecimal.ZERO;
         BigDecimal totalBTC = BigDecimal.ZERO;
+        BigDecimal totalETH = BigDecimal.ZERO;
         for (Entry<Long, ConcurrentMap<AssetEnum, Asset>> userEntry : this.assetService.getUserAssets().entrySet()) {
             Long userId = userEntry.getKey();
             ConcurrentMap<AssetEnum, Asset> assets = userEntry.getValue();
@@ -521,6 +522,9 @@ public class TradingEngineService extends LoggerSupport {
                 case BTC -> {
                     totalBTC = totalBTC.add(asset.getTotal());
                 }
+                case ETH ->{
+                    totalETH = totalETH.add(asset.getTotal());
+                }
                 default -> require(false, "Unexpected asset id: " + assetId);
                 }
             }
@@ -528,6 +532,7 @@ public class TradingEngineService extends LoggerSupport {
         // 各类别资产总额为0:
         require(totalUSD.signum() == 0, "Non zero USD balance: " + totalUSD);
         require(totalBTC.signum() == 0, "Non zero BTC balance: " + totalBTC);
+        require(totalETH.signum() == 0, "Non zero BTC balance: " + totalBTC);
     }
 
     void validateOrders() {

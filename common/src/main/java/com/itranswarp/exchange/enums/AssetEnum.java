@@ -4,7 +4,10 @@ public enum AssetEnum {
 
     BTC,
 
-    USD;
+    USD,
+
+    ETH;
+
 
     public static final int SCALE = 2;
 }

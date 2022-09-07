@@ -103,6 +103,7 @@ CREATE TABLE orders (
   quantity DECIMAL(36,18) NOT NULL,
   sequenceId BIGINT NOT NULL,
   status VARCHAR(32) NOT NULL,
+  asset VARCHAR(32) NOT NULL,
   unfilledQuantity DECIMAL(36,18) NOT NULL,
   updatedAt BIGINT NOT NULL,
   userId BIGINT NOT NULL,

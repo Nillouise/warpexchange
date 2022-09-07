@@ -271,6 +271,11 @@ function initApp() {
 				USD: {
 					available: NaN,
 					frozen: NaN
+				},
+
+				ETH: {
+					available: NaN,
+					frozen: NaN
 				}
 			},
 			// 展示Active Orders = true; 展示History Orders = false:
@@ -476,6 +481,11 @@ function initApp() {
 								<td>BTC</td>
 								<td class="text-end" v-text="formatNumber(assets.BTC.available)"></td>
 								<td class="text-end" v-text="formatNumber(assets.BTC.frozen)"></td>
+							</tr>
+							<tr>
+								<td>ETH</td>
+								<td class="text-end" v-text="formatNumber(assets.ETH.available)"></td>
+								<td class="text-end" v-text="formatNumber(assets.ETH.frozen)"></td>
 							</tr>
 						<tbody>
 					</table>

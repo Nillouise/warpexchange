@@ -33,22 +33,22 @@ public class OrderService {
     /**
      * 创建订单，失败返回null:
      */
-    public OrderEntity createOrder(long sequenceId, long ts, Long orderId, Long userId, Direction direction,
-            BigDecimal price, BigDecimal quantity) {
+    public OrderEntity createOrder(long sequenceId, AssetEnum asset, long ts, Long orderId, Long userId, Direction direction,
+                                   BigDecimal price, BigDecimal quantity) {
         switch (direction) {
-        case BUY -> {
-            // 买入，需冻结USD：
-            if (!assetService.tryFreeze(userId, AssetEnum.USD, price.multiply(quantity))) {
-                return null;
+            case BUY -> {
+                // 买入，需冻结USD：
+                if (!assetService.tryFreeze(userId, AssetEnum.USD, price.multiply(quantity))) {
+                    return null;
+                }
             }
-        }
-        case SELL -> {
-            // 卖出，需冻结BTC：
-            if (!assetService.tryFreeze(userId, AssetEnum.BTC, quantity)) {
-                return null;
+            case SELL -> {
+                // 卖出，需冻结资产
+                if (!assetService.tryFreeze(userId, asset, quantity)) {
+                    return null;
+                }
             }
-        }
-        default -> throw new IllegalArgumentException("Invalid direction.");
+            default -> throw new IllegalArgumentException("Invalid direction.");
         }
         OrderEntity order = new OrderEntity();
         order.id = orderId;
@@ -59,6 +59,7 @@ public class OrderService {
         order.quantity = quantity;
         order.unfilledQuantity = quantity;
         order.createdAt = order.updatedAt = ts;
+        order.asset = asset;
         // 添加到ActiveOrders:
         this.activeOrders.put(order.id, order);
         // 添加到UserOrders:
