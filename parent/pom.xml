@@ -3,6 +3,9 @@
 	<groupId>com.itranswarp.exchange</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.0</version>
+	<modules>
+		<module>../game/game</module>
+	</modules>
 	<packaging>pom</packaging>
 
 	<parent>

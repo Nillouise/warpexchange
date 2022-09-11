@@ -306,6 +306,10 @@ public class TradingEngineService extends LoggerSupport {
         if (this.fatalError) {
             return;
         }
+
+
+
+
         if (event.sequenceId <= this.lastSequenceId) {
             logger.warn("skip duplicate event: {}", event);
             return;

@@ -8,16 +8,65 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.itranswarp.exchange.db.DbTemplate;
+import com.itranswarp.exchange.model.asset.UserAssetDBEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.itranswarp.exchange.enums.AssetEnum;
 import com.itranswarp.exchange.support.LoggerSupport;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Transactional
 public class AssetService extends LoggerSupport {
 
     // UserId -> Map(AssetEnum -> Assets[available/frozen])
     final ConcurrentMap<Long, ConcurrentMap<AssetEnum, Asset>> userAssets = new ConcurrentHashMap<>();
+
+    @Autowired
+    DbTemplate dbTemplate;
+
+    void addUserAsset() {
+        userAssets.put(100L, new ConcurrentHashMap<>());
+        userAssets.get(100L).put(AssetEnum.USD, new Asset(BigDecimal.valueOf(10), BigDecimal.valueOf(20)));
+    }
+
+    public boolean clearAsset() {
+        userAssets.clear();
+        return true;
+    }
+
+    public boolean dumpDB(int era) {
+        dbTemplate.getJdbcTemplate().execute("delete from users_asset where era = " + String.valueOf(era));
+        UserAssetDBEntity e = new UserAssetDBEntity();
+        for (var i : userAssets.entrySet()) {
+            e.userId = i.getKey();
+            for (var j : i.getValue().entrySet()) {
+                e.id = null;
+                e.asset = j.getKey();
+                e.era = (long) era;
+                e.available = j.getValue().available;
+                e.frozen = j.getValue().frozen;
+                dbTemplate.insert(e);
+            }
+        }
+        return true;
+    }
+
+    public boolean loadFromDB(int era) {
+        userAssets.clear();
+        List<UserAssetDBEntity> entities = this.dbTemplate.from(UserAssetDBEntity.class).where("era = ?", era).list();
+        for (UserAssetDBEntity e : entities) {
+            if (!userAssets.containsKey(e.userId)) {
+                userAssets.put(e.userId, new ConcurrentHashMap<AssetEnum, Asset>());
+            }
+            userAssets.get(e.userId).put(e.asset, new Asset(e.available, e.frozen));
+            logger.debug("asset {}", e);
+        }
+
+        return true;
+    }
 
     public Asset getAsset(Long userId, AssetEnum assetId) {
         ConcurrentMap<AssetEnum, Asset> assets = userAssets.get(userId);
@@ -68,7 +117,7 @@ public class AssetService extends LoggerSupport {
     }
 
     public boolean tryTransfer(Transfer type, Long fromUser, Long toUser, AssetEnum assetId, BigDecimal amount,
-            boolean checkBalance) {
+                               boolean checkBalance) {
         if (amount.signum() == 0) {
             return true;
         }
@@ -84,36 +133,36 @@ public class AssetService extends LoggerSupport {
             toAsset = initAssets(toUser, assetId);
         }
         return switch (type) {
-        case AVAILABLE_TO_AVAILABLE -> {
-            // 需要检查余额且余额不足:
-            if (checkBalance && fromAsset.available.compareTo(amount) < 0) {
-                yield false;
+            case AVAILABLE_TO_AVAILABLE -> {
+                // 需要检查余额且余额不足:
+                if (checkBalance && fromAsset.available.compareTo(amount) < 0) {
+                    yield false;
+                }
+                fromAsset.available = fromAsset.available.subtract(amount);
+                toAsset.available = toAsset.available.add(amount);
+                yield true;
             }
-            fromAsset.available = fromAsset.available.subtract(amount);
-            toAsset.available = toAsset.available.add(amount);
-            yield true;
-        }
-        case AVAILABLE_TO_FROZEN -> {
-            // 需要检查余额且余额不足:
-            if (checkBalance && fromAsset.available.compareTo(amount) < 0) {
-                yield false;
+            case AVAILABLE_TO_FROZEN -> {
+                // 需要检查余额且余额不足:
+                if (checkBalance && fromAsset.available.compareTo(amount) < 0) {
+                    yield false;
+                }
+                fromAsset.available = fromAsset.available.subtract(amount);
+                toAsset.frozen = toAsset.frozen.add(amount);
+                yield true;
             }
-            fromAsset.available = fromAsset.available.subtract(amount);
-            toAsset.frozen = toAsset.frozen.add(amount);
-            yield true;
-        }
-        case FROZEN_TO_AVAILABLE -> {
-            // 需要检查余额且余额不足:
-            if (checkBalance && fromAsset.frozen.compareTo(amount) < 0) {
-                yield false;
+            case FROZEN_TO_AVAILABLE -> {
+                // 需要检查余额且余额不足:
+                if (checkBalance && fromAsset.frozen.compareTo(amount) < 0) {
+                    yield false;
+                }
+                fromAsset.frozen = fromAsset.frozen.subtract(amount);
+                toAsset.available = toAsset.available.add(amount);
+                yield true;
             }
-            fromAsset.frozen = fromAsset.frozen.subtract(amount);
-            toAsset.available = toAsset.available.add(amount);
-            yield true;
-        }
-        default -> {
-            throw new IllegalArgumentException("invalid type: " + type);
-        }
+            default -> {
+                throw new IllegalArgumentException("invalid type: " + type);
+            }
         };
     }
 
